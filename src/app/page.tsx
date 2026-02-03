@@ -1,20 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase"; // O "../../lib/supabase" según te funcione
 import Link from "next/link";
 
-// Usamos las mismas categorías que en el Admin
 const CATEGORIES = [
-  "Todos",
-  "Cuidado Personal",
-  "Abarrotes",
-  "Bebidas",
-  "Snacks y Golosinas",
-  "Refrigerados y Congelados",
-  "Limpieza del Hogar",
-  "Comida Preparada",
-  "Frutas y Verduras"
+  "Todos", "Cuidado Personal", "Abarrotes", "Bebidas", 
+  "Snacks y Golosinas", "Refrigerados y Congelados", 
+  "Limpieza del Hogar", "Comida Preparada", "Frutas y Verduras"
 ];
 
 export default function StorePage() {
@@ -32,7 +25,7 @@ export default function StorePage() {
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .order("created_at", { ascending: false }); // Los más nuevos primero
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       if (data) setProducts(data);
@@ -54,7 +47,7 @@ export default function StorePage() {
       {/* --- ENCABEZADO FIJO --- */}
       <header className="sticky top-0 z-10 bg-white shadow-sm px-4 py-3 flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold text-blue-700">Bodega App 🛒</h1>
+          <h1 className="text-xl font-bold text-blue-700">OmniStore Cundualo 🛒</h1>
           <p className="text-xs text-gray-500">Abierto hasta las 10pm</p>
         </div>
         <Link href="/admin" className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
@@ -62,19 +55,14 @@ export default function StorePage() {
         </Link>
       </header>
 
-      {/* --- PESTAÑAS DE CATEGORÍA (Carrusel Horizontal) --- */}
+      {/* --- PESTAÑAS DE CATEGORÍA --- */}
       <div className="bg-white border-b border-gray-100 py-2 sticky top-14 z-10">
         <div className="flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-hide">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`
-                whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all
-                ${selectedCategory === cat 
-                  ? "bg-blue-600 text-white shadow-md" 
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"}
-              `}
+              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === cat ? "bg-blue-600 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
             >
               {cat}
             </button>
@@ -94,12 +82,25 @@ export default function StorePage() {
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {filteredProducts.map((product) => (
-              <div key={product.id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+              <div key={product.id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between overflow-hidden">
                 
-                {/* Como aún no tenemos subida de imágenes, usamos un cuadro de color */}
-                <div className="h-32 bg-slate-100 rounded-lg mb-3 flex items-center justify-center text-3xl">
-                  {getEmoji(product.category)}
-                </div>
+                {/* 👇👇👇 AQUÍ ESTÁ LA MAGIA DE LAS IMÁGENES 👇👇👇 */}
+                {product.image_url ? (
+                  // Si tiene imagen, mostramos la foto
+                  <div className="h-32 mb-3 rounded-lg overflow-hidden bg-gray-100">
+                    <img 
+                      src={product.image_url} 
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  // Si NO tiene imagen, mostramos el Emoji de siempre
+                  <div className="h-32 bg-slate-100 rounded-lg mb-3 flex items-center justify-center text-4xl">
+                    {getEmoji(product.category)}
+                  </div>
+                )}
+                {/* 👆👆👆 FIN DE LA MAGIA 👆👆👆 */}
 
                 <div>
                   <h3 className="font-bold text-gray-800 text-sm leading-tight mb-1">
@@ -123,12 +124,10 @@ export default function StorePage() {
           </div>
         )}
       </main>
-
     </div>
   );
 }
 
-// Pequeña función para dar vida visual sin imágenes reales todavía
 function getEmoji(category: string) {
   switch (category) {
     case "Cuidado Personal": return "🧼";
