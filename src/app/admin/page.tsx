@@ -7,7 +7,7 @@ import { z } from "zod";
 import { supabase } from "../../lib/supabase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-// 👇 NUEVO 1: Importamos la librería de compresión
+// NUEVO 1: Importamos la librería de compresión
 import imageCompression from 'browser-image-compression'; 
 
 const CATEGORIES = [
@@ -141,6 +141,9 @@ export default function AdminPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-blue-400">Admin</h1>
           <div className="flex gap-4 items-center">
+            <Link href="/admin/sales" className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500 font-bold">
+              Ver Ventas 💰
+            </Link>                       
             <Link href="/" className="text-sm bg-slate-700 px-3 py-1 rounded hover:bg-slate-600">Ver Tienda</Link>
             <button onClick={handleLogout} className="text-sm bg-red-600 px-3 py-1 rounded hover:bg-red-500">Salir</button>
           </div>

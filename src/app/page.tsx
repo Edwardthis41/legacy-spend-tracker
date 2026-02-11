@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase"; // O "../../lib/supabase" según te funcione
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-
+// 👇 IMPORTAMOS EL NUEVO CEREBRO Y EL BOTÓN
+import { useCart } from "@/context/CartContext";
+import CartButton from "@/components/CartButton"
 const CATEGORIES = [
   "Todos", "Cuidado Personal", "Abarrotes", "Bebidas", 
   "Snacks y Golosinas", "Refrigerados y Congelados", 
@@ -14,8 +16,10 @@ export default function StorePage() {
   const [products, setProducts] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [isLoading, setIsLoading] = useState(true);
+  
+  // 👇 USAMOS EL CEREBRO DEL CARRITO
+  const { addItem } = useCart(); 
 
-  // 1. CARGAR PRODUCTOS AL INICIAR
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -36,7 +40,6 @@ export default function StorePage() {
     }
   };
 
-  // 2. FILTRADO INTELIGENTE
   const filteredProducts = selectedCategory === "Todos"
     ? products
     : products.filter((p) => p.category === selectedCategory);
@@ -44,18 +47,16 @@ export default function StorePage() {
   return (
     <div className="min-h-screen bg-gray-50 text-slate-900 pb-20">
       
-      {/* --- ENCABEZADO FIJO --- */}
+      {/* HEADER */}
       <header className="sticky top-0 z-10 bg-white shadow-sm px-4 py-3 flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold text-blue-700">OmniStore Cundualo 🛒</h1>
+          <h1 className="text-xl font-bold text-blue-700">Bodega App 🛒</h1>
           <p className="text-xs text-gray-500">Abierto hasta las 10pm</p>
         </div>
-        <Link href="/admin" className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-          ⚙️
-        </Link>
+        <Link href="/admin" className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">⚙️</Link>
       </header>
 
-      {/* --- PESTAÑAS DE CATEGORÍA --- */}
+      {/* CATEGORÍAS */}
       <div className="bg-white border-b border-gray-100 py-2 sticky top-14 z-10">
         <div className="flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-hide">
           {CATEGORIES.map((cat) => (
@@ -70,7 +71,7 @@ export default function StorePage() {
         </div>
       </div>
 
-      {/* --- GRILLA DE PRODUCTOS --- */}
+      {/* GRILLA DE PRODUCTOS */}
       <main className="p-4">
         {isLoading ? (
           <p className="text-center text-gray-400 mt-10">Cargando bodega...</p>
@@ -84,38 +85,30 @@ export default function StorePage() {
             {filteredProducts.map((product) => (
               <div key={product.id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between overflow-hidden">
                 
-                {/* 👇👇👇 AQUÍ ESTÁ LA MAGIA DE LAS IMÁGENES 👇👇👇 */}
+                {/* IMAGEN / EMOJI */}
                 {product.image_url ? (
-                  // Si tiene imagen, mostramos la foto
                   <div className="h-32 mb-3 rounded-lg overflow-hidden bg-gray-100">
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover"/>
                   </div>
                 ) : (
-                  // Si NO tiene imagen, mostramos el Emoji de siempre
                   <div className="h-32 bg-slate-100 rounded-lg mb-3 flex items-center justify-center text-4xl">
                     {getEmoji(product.category)}
                   </div>
                 )}
-                {/* 👆👆👆 FIN DE LA MAGIA 👆👆👆 */}
 
                 <div>
-                  <h3 className="font-bold text-gray-800 text-sm leading-tight mb-1">
-                    {product.name}
-                  </h3>
-                  <p className="text-xs text-gray-400 mb-2 truncate">
-                    {product.description || "Sin descripción"}
-                  </p>
+                  <h3 className="font-bold text-gray-800 text-sm leading-tight mb-1">{product.name}</h3>
+                  <p className="text-xs text-gray-400 mb-2 truncate">{product.description || "Sin descripción"}</p>
                 </div>
 
                 <div className="flex justify-between items-center mt-2">
-                  <span className="font-bold text-blue-600 text-lg">
-                    ${Number(product.price).toFixed(2)}
-                  </span>
-                  <button className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold hover:bg-green-200">
+                  <span className="font-bold text-blue-600 text-lg">${Number(product.price).toFixed(2)}</span>
+                  
+                  {/* 👇 BOTÓN REAL: AHORA AGREGA AL CARRITO */}
+                  <button 
+                    onClick={() => addItem(product)} // 👈 LLAMAMOS A LA FUNCIÓN
+                    className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold hover:bg-green-200 active:scale-95 transition-transform"
+                  >
                     + Agregar
                   </button>
                 </div>
@@ -124,6 +117,10 @@ export default function StorePage() {
           </div>
         )}
       </main>
+
+      {/* 👇 EL NUEVO BOTÓN FLOTANTE */}
+      <CartButton /> 
+
     </div>
   );
 }
