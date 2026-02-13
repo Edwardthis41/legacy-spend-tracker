@@ -33,7 +33,7 @@ const handleCheckout = async () => {
 
       // 2. CREAMOS EL MENSAJE DE WHATSAPP 💬
       // Usamos %0A para saltos de línea
-      let message = `Nuevo pedido desde la web, Hola, buen día \nMi nombre es *${customerName}*. \nQuisiera confirmar disponibilidad y precio: \n`;
+      let message = `Nuevo pedido desde la web. Hola, \nbuen día \nMi nombre es *${customerName}*. \nQuisiera confirmar disponibilidad: \n`;
       message += `--------------------------------\n`;
       
       
@@ -68,7 +68,7 @@ const handleCheckout = async () => {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <h1 className="text-2xl font-bold text-gray-400 mb-4">Tu carrito está vacío 🛒</h1>
-        <Link href="/" className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-700">
+        <Link href="/" className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-700 shadow-lg transition-transform hover:scale-105">
           Volver a la Tienda
         </Link>
       </div>
@@ -77,7 +77,7 @@ const handleCheckout = async () => {
 
   // SI HAY PRODUCTOS
   return (
-    <div className="min-h-screen bg-gray-50 p-4 pb-24">
+    <div className="min-h-screen bg-gray-50 p-4 pb-24 max-w-md mx-auto">
       <h1 className="text-2xl font-bold text-blue-800 mb-6">Tu Pedido 📝</h1>
 
       {/* LISTA DE PRODUCTOS */}
@@ -96,7 +96,7 @@ const handleCheckout = async () => {
               </span>
               <button 
                 onClick={() => removeItem(item.id)}
-                className="text-red-500 hover:text-red-700 p-2"
+                className="text-red-400 hover:text-red-600 p-2 bg-red-50 rounded-full"
               >
                 🗑️
               </button>
@@ -106,7 +106,7 @@ const handleCheckout = async () => {
       </div>
 
       {/* RESUMEN DE PAGO */}
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+      <div className="bg-white p-6 rounded-2xl border-dashed text-lg font-extrabold border-gray-200">
         <div className="flex justify-between items-center mb-6">
           <span className="text-xl text-gray-600">Total a Pagar:</span>
           <span className="text-3xl font-bold text-green-600">${total.toFixed(2)}</span>
@@ -114,7 +114,7 @@ const handleCheckout = async () => {
 
         {/* FORMULARIO SIMPLE */}
         <div className="mb-6">
-          <label className="block text-sm font-bold text-gray-500 mb-2">Tu Nombre:</label>
+          <label className="block text-sm focus:bg-white transition font-medium text-gray-500 mb-2">Tu Nombre:</label>
           <input 
             type="text" 
             value={customerName}
