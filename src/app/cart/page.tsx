@@ -16,52 +16,68 @@ export default function CartPage() {
   const PHONE_NUMBER = "593985586543";
 
 const handleCheckout = async () => {
-    if (!customerName.trim()) return alert("Por favor escribe tu nombre");
-    setLoading(true);
+  if (!customerName.trim()) return alert("Por favor escribe tu nombre");
 
-    try {
-      // 1. Guardamos en Supabase (Tu respaldo secreto)
-      const { error } = await supabase.from("sales").insert([
-        {
-          total: total,
-          items: items,
-          customer_name: customerName,
-        },
-      ]);
+  // 🛡️ BLOQUEO ANTI-SPAM (5 MINUTOS)
+  const lastOrderTime = localStorage.getItem("lastOrderTime");
+  const now = Date.now();
+  const COOLDOWN_MINUTES = 5;
+  const cooldownTime = COOLDOWN_MINUTES * 60 * 1000;
 
-      if (error) throw error;
+  if (lastOrderTime) {
+    const timePassed = now - Number(lastOrderTime);
 
-      // 2. CREAMOS EL MENSAJE DE WHATSAPP 💬
-      // Usamos %0A para saltos de línea
-      let message = `Nuevo pedido desde la web. Hola, \nbuen día \nMi nombre es *${customerName}*. \nQuisiera confirmar disponibilidad: \n`;
-      message += `--------------------------------\n`;
-      
-      
-      items.forEach((item) => {
-        message += `• ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
-      });
-
-      message += `\n*TOTAL A PAGAR: $${total.toFixed(2)}*`;
-      message += `\n\n(Pedido enviado desde la Web)`;
-      message += `Hora: ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-      // 3. ABRIMOS WHATSAPP AUTOMÁTICAMENTE
-      // encodeURIComponent convierte los espacios y símbolos para que la URL los entienda
-      const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
-      
-      window.open(whatsappUrl, '_blank'); // Abre en nueva pestaña
-
-      // 4. LIMPIEZA
-      alert("¡Pedido generado! Se abrirá WhatsApp para enviarlo. 📲");
-      clearCart();
-      router.push("/"); 
-
-    } catch (error) {
-      console.error(error);
-      alert("Error al procesar el pedido en la base de datos ❌");
-    } finally {
-      setLoading(false);
+    if (timePassed < cooldownTime) {
+      const minutesLeft = Math.ceil((cooldownTime - timePassed) / 60000);
+      alert(`⏳ Por seguridad, espera ${minutesLeft} minutos antes de enviar otro pedido.`);
+      return; // ⛔ Detenemos aquí
     }
-  };
+  }
+
+  setLoading(true);
+
+  try {
+    // 1. Guardamos en Supabase
+    const { error } = await supabase.from("sales").insert([
+      {
+        total: total,
+        items: items,
+        customer_name: customerName,
+      },
+    ]);
+
+    if (error) throw error;
+
+    // 💾 Guardamos hora para activar bloqueo
+    localStorage.setItem("lastOrderTime", Date.now().toString());
+
+    // 2. MENSAJE WHATSAPP (tu nuevo formato)
+    let message = `Nuevo pedido desde la web. \nHola, buen día \nMi nombre es *${customerName}*. \nQuisiera confirmar disponibilidad: \n`;
+    message += `--------------------------------\n`;
+
+    items.forEach((item) => {
+      message += `• ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
+    });
+
+    message += `\n*TOTAL A PAGAR: $${total.toFixed(2)}*`;
+    message += `\n\n(Pedido enviado desde la Web)`;
+    message += `Hora: ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+
+    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
+
+    alert("¡Pedido generado! Se abrirá WhatsApp para enviarlo. 📲");
+    clearCart();
+    router.push("/");
+
+  } catch (error) {
+    console.error(error);
+    alert("Error al procesar el pedido en la base de datos ❌");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // SI EL CARRITO ESTÁ VACÍO
   if (items.length === 0) {
